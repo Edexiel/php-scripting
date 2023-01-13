@@ -3,12 +3,17 @@
 #include <filesystem>
 
 #include "php_scripting/vm.hpp"
+#include "php_scripting/php_module.hpp"
 
 #define MAX_COLUMNS 20
 
+PHP_FUNCTION (test)
+{
+    printf("coucou\n");
+}
+
 int main()
 {
-    //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 450;
 
@@ -37,10 +42,20 @@ int main()
     SetCameraMode(camera, CAMERA_FIRST_PERSON); // Set a first person camera mode
 
     SetTargetFPS(60);                           // Set our game to run at 60 frames-per-second
+
+    EnableCursor();
+    ShowCursor();
+
     Pachy::vm vm;
 
-    std::printf("%s", std::filesystem::current_path().c_str());
-    vm.startup();
+    Pachy::php_module module{"Raylib"};
+
+    module.registerfunction("test", ZEND_FN(test));
+
+    vm.addModule(module);
+
+
+
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -49,6 +64,7 @@ int main()
         vm.execute("scripts/example.php");
 
         // Update
+
         //----------------------------------------------------------------------------------
         UpdateCamera(&camera);                  // Update camera
         //----------------------------------------------------------------------------------
@@ -84,12 +100,9 @@ int main()
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
-    vm.shutdown();
 
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
+
     CloseWindow();        // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
 
     return 0;
 }

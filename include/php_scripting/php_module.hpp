@@ -1,12 +1,9 @@
-//
-// Created by guillaume on 05/05/22.
-//
-
 #ifndef PHP_SCRIPTING_PHP_MODULE_HPP
 #define PHP_SCRIPTING_PHP_MODULE_HPP
 
 #include <sapi/embed/php_embed.h>
-#include <utility>
+#include <vector>
+#include <string>
 
 
 namespace Pachy
@@ -14,41 +11,22 @@ namespace Pachy
     class php_module
     {
     private:
+        bool _readOnly = false;
         std::string _name;
-
         zend_module_entry _module_entry;
-        zend_function_entry *_function_entry;
+        std::vector<zend_function_entry> function_entries;
 
     public:
-        php_module(std::string& name,zend_function_entry * functionEntry);
 
+        php_module(const std::string &name);
+//        php_module(const std::string &name,zend_function_entry* functionEntries);
 
         zend_module_entry *getModule();
+
+        void registerfunction(const std::string &name, void (*func)(INTERNAL_FUNCTION_PARAMETERS));
     };
 
-    zend_module_entry *php_module::getModule()
-    {
-        return &_module_entry;
-    }
-
-    php_module::php_module(std::string& name,zend_function_entry * functionEntry)
-    {
-        _name = name;
-        _function_entry = functionEntry;
-        _module_entry = {
-                STANDARD_MODULE_HEADER,
-                _name.c_str(), /* extension name */
-                _function_entry, /* function entries */
-                NULL, /* MINIT */
-                NULL, /* MSHUTDOWN */
-                NULL, /* RINIT */
-                NULL, /* RSHUTDOWN */
-                NULL, /* MINFO */
-                "0.1", /* version */
-                STANDARD_MODULE_PROPERTIES
-        };
-    }
-
-
 }
+
+
 #endif //PHP_SCRIPTING_PHP_MODULE_HPP
