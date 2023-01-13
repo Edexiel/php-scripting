@@ -33,12 +33,12 @@ php_module::php_module(const std::string& name)
     _name = name;
 }
 
-void php_module::registerfunction(const std::string &name, void (*func)(INTERNAL_FUNCTION_PARAMETERS))
+void php_module::registerfunction(const char * name, void (*func)(INTERNAL_FUNCTION_PARAMETERS))
 {
     if (_readOnly)
         return;
 
-    function_entries.push_back({name.c_str(), func, NULL});
+    function_entries.push_back({name, func, NULL});
 
 
 }

@@ -1,16 +1,39 @@
 #include <fmt/format.h>
 #include <raylib.h>
 #include <filesystem>
+#include <chrono>
 
 #include "php_scripting/vm.hpp"
 #include "php_scripting/php_module.hpp"
 
+
 #define MAX_COLUMNS 20
 
-PHP_FUNCTION (test)
+using namespace std;
+using namespace std::chrono;
+
+PHP_FUNCTION (draw_text)
 {
-    printf("coucou\n");
+    char *message;
+    size_t message_len;
+
+    long x, y, size;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "slll", &message, &message_len, &x, &y, &size) == FAILURE) {
+        return;
+    }
+
+
+    DrawText(message, (int)x, (int)y, (int)size, RED);
+
+    RETURN_NULL();
 }
+
+PHP_FUNCTION (print_coucou)
+{
+    printf("coucou !\n");
+    RETURN_NULL();
+}
+
 
 int main()
 {
@@ -41,7 +64,7 @@ int main()
 
     SetCameraMode(camera, CAMERA_FIRST_PERSON); // Set a first person camera mode
 
-    SetTargetFPS(60);                           // Set our game to run at 60 frames-per-second
+    SetTargetFPS(0);                           // Set our game to run at 60 frames-per-second
 
     EnableCursor();
     ShowCursor();
@@ -50,18 +73,20 @@ int main()
 
     Pachy::php_module module{"Raylib"};
 
-    module.registerfunction("test", ZEND_FN(test));
+    module.registerfunction("print_coucou", ZEND_FN(print_coucou));
+    module.registerfunction("draw_text", ZEND_FN(draw_text));
+
 
     vm.addModule(module);
 
 
+//    std::chrono::time_point<std::chrono::system_clock> start, end;
+//    std::chrono::duration<double> elapsed_time ;
+//    vector<duration<microseconds>> time_stats;
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-
-
-        vm.execute("scripts/example.php");
 
         // Update
 
@@ -70,6 +95,7 @@ int main()
         //----------------------------------------------------------------------------------
 
         // Draw
+
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
@@ -96,6 +122,16 @@ int main()
         DrawText("First person camera default controls:", 20, 20, 10, BLACK);
         DrawText("- Move with keys: W, A, S, D", 40, 40, 10, DARKGRAY);
         DrawText("- Mouse move to look around", 40, 60, 10, DARKGRAY);
+
+        DrawFPS(10,10);
+
+//        start = high_resolution_clock::now();
+        vm.execute("scripts/example.php");
+//        end = high_resolution_clock::now();
+//        elapsed_time = duration_cast<microseconds>(end - start);
+
+//        time_stats.push_back(elapsed_time);
+
 
         EndDrawing();
         //----------------------------------------------------------------------------------
